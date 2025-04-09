@@ -1,0 +1,12 @@
+The game of lines has 10 by 10 grid
+5 types of "balls" exist, symbolyzed by different letters
+
+The grid will be in text format with coordinates of cells
+
+User has to enter coordinates of a cell with ball to move
+    If cell doesn't have a ball in it, a warning is thrown and
+    user is prompted to try again
+
+Throughout all the actions of the user an option to exit game exists
+
+1. First thing user sees is grid with three balls on it and coordinates
