@@ -3,12 +3,26 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define FIELD_SIDE 10
 #define COLORS_COUNT 5
 #define MAX_STRING 256
 
 char field[FIELD_SIDE][FIELD_SIDE];
+
+char *coordinates;
+
+enum Statetype {
+    OUTPUT_FIELD,
+    TEST_EMPTY,
+    GAME_OVER,
+    ENTER_COORD,
+    TEST_LEX,
+    TEST_PATH,
+    MOVE_FILL,
+    EXIT
+};
 
 char colors[COLORS_COUNT][7] = {
     "RED",
@@ -18,7 +32,7 @@ char colors[COLORS_COUNT][7] = {
     "YELLOW"
 };
 
-char *assign_string_from_input (void)
+char *assign_string_from_input ()
 {
     static char input[MAX_STRING];
     size_t len;
@@ -36,8 +50,10 @@ char *assign_string_from_input (void)
     return input;
 }
 
-void output_field(void)
+enum Statetype handle_output_field()
 {
+    enum Statetype state;
+
     printf("  ");
 
     for (int i = 0; i < FIELD_SIDE; i++)
@@ -85,6 +101,55 @@ void output_field(void)
     }
     
     printf("\n");
+
+    state = TEST_EMPTY;
+
+    return state;
+}
+
+enum Statetype handle_test_empty()
+{
+    enum Statetype state;
+    bool empty = false;
+
+    for (int i = 0; i < FIELD_SIDE; i++)
+    {
+        for (int j = 0; j < FIELD_SIDE; j++)
+        {
+            if (field[i][j] == '\0')
+            {
+                empty = true;
+            }
+        }
+    }
+    
+    if (empty)
+    {
+        state = ENTER_COORD;
+    }
+    else
+    {
+        state = GAME_OVER;
+    }
+
+    return state;
+}
+
+enum Statetype handle_game_over()
+{
+    char *enter;
+    enum Statetype state;
+    printf("GAME OVER!\n");
+    printf("Enter \"exit\" to exit the game\n");
+
+    enter = assign_string_from_input();
+
+    if (strcmp(enter, "exit") == 0)
+    {
+        state = EXIT;
+    }
+
+    return EXIT;    
 }
 
 void add_balls(char balls_quantity)
@@ -112,18 +177,30 @@ void add_balls(char balls_quantity)
     }
 }
 
-int main(void)
+enum Statetype handle_enter_coordinates()
 {
-    char *coordinates;
-
-    add_balls(3);
-    output_field();
+    enum Statetype state;
 
     printf("Enter the coordinates of the ball you want to move ");
     printf("and destination separated by dash:\n");
-    
+
     coordinates = assign_string_from_input();
 
+    if (strcmp(coordinates, "exit") != 0)
+    {
+        state = EXIT;
+    }
+    else
+    {
+        state = TEST_LEX;
+    }
+    
+    return state;
+}
+
+enum Statetype handle_test_lex()
+{
+    enum Statetype state;
     if (
         ! (
             isdigit(coordinates[0]) ||
@@ -135,6 +212,44 @@ int main(void)
     )
     {
         printf("Coordinates were input incorrectly\n");
+        state = ENTER_COORD;
     }
+    else
+    {
+        state = TEST_PATH;
+    }
+
+    return state;
+}
+
+int main(void)
+{
+    bool err = false;   // Error that coordinates were input
+    // incorrectly
+
+    add_balls(3);
+    handle_output_field();
     
+    do
+    {
+        printf("Enter the coordinates of the ball you want to move ");
+        printf("and destination separated by dash:\n");
+
+        coordinates = assign_string_from_input();
+
+        if (
+            ! (
+                isdigit(coordinates[0]) ||
+                isdigit(coordinates[1]) ||
+                (coordinates[2] == '-') ||
+                isdigit(coordinates[3]) ||
+                isdigit(coordinates[4])
+            )
+        )
+        {
+            printf("Coordinates were input incorrectly\n");
+            err = true;
+        }
+
+    } while (err);   
 }
