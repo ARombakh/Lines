@@ -13,6 +13,8 @@ char field[FIELD_SIDE][FIELD_SIDE];
 
 char *coordinates;
 
+int new_entries[8];
+
 int x_src;
 int y_src;
 int x_dest;
@@ -26,6 +28,7 @@ enum Statetype {
     TEST_LEX,
     TEST_PATH,
     MOVE_FILL,
+    CHECK_5_IN_ROW,
     EXIT
 };
 
@@ -77,7 +80,7 @@ enum Statetype handle_output_field()
                 printf("%d ", i);
             }
             
-            if (field[j][i] == '\0')
+            if (field[j][i] == 'A')
             {
                 printf(" ");
             }
@@ -121,7 +124,7 @@ enum Statetype handle_test_empty()
     {
         for (int j = 0; j < FIELD_SIDE; j++)
         {
-            if (field[i][j] == '\0')
+            if (field[i][j] == 'A')
             {
                 empty = true;
             }
@@ -161,24 +164,62 @@ void add_balls(char balls_quantity)
 {
     int x;
     int y;
+    int i = 0;
+    int empty = 0; // Var to hold number of empty spots
+    int which_to_fill;
     char color;
     char color_num;
 
-    srand ( time(NULL) );
+    printf("Calculating number of empty fields\n");
 
-    for (int i = 0; i < balls_quantity; i++)
+    // Calculating how many empty spots are left
+    for (int i = 0; i < FIELD_SIDE; i++)
+    {
+        for (int j = 0; j < FIELD_SIDE; j++)
+        {
+            if (field[i][j] == 'A')
+            {
+                empty++;
+            }
+        }
+    }
+
+    printf("Number of empty fields is %d\n", empty);
+
+    // srand ( time(NULL) );
+
+    while (i < balls_quantity && empty > 0)
     {
         color_num = rand() % COLORS_COUNT;
 
         color = colors[color_num][0];
+
+        which_to_fill = rand() % empty;
     
-        do
+        for (int i = 0; i < FIELD_SIDE; i++)
         {
-            x = rand() % FIELD_SIDE;
-            y = rand() % FIELD_SIDE;
-        } while (field[x][y] != '\0');
+            for (int j = 0; j < FIELD_SIDE; j++)
+            {
+                if (field[i][j] == 'A')
+                {
+                    which_to_fill--;
+                    if (which_to_fill == 0)
+                    {
+                        x = i;
+                        y = j;
+                        goto loop_exit;
+                    }
+                }
+            }
+        }
+
+        loop_exit:
     
         field[x][y] = color;
+        new_entries[(i + 1) * 2] = x;
+        new_entries[((i + 1) * 2) + 1] = y;
+        i++;
+        empty--;
     }
 }
 
@@ -234,19 +275,18 @@ enum Statetype handle_test_path()
     x_src = atoi(&coordinates[0]);
     y_src = atoi(&coordinates[2]);
 
-    printf("The coordinates x_src %d y_src %d\n", x_src, y_src);
     x_dest = atoi(&coordinates[4]);
     y_dest = atoi(&coordinates[6]);
 
-    if (field[x_src][y_src] == '\0')
+    if (field[x_src][y_src] == 'A')
     {
         printf("The field %d %d is empty. ", x_src, y_src);
         printf("Choose another source field\n");
         return ENTER_COORD;
     }
-    else if (field[x_dest][x_src] != '\0')
+    else if (field[x_dest][y_dest] != 'A')
     {
-        printf("The field %d %d is not empty .", x_dest, y_dest);
+        printf("The field %d %d is not empty. ", x_dest, y_dest);
         printf("Choose another destination field\n");
         return ENTER_COORD;
     }
@@ -256,16 +296,61 @@ enum Statetype handle_test_path()
 
 enum Statetype handle_move_fill()
 {
-    field[x_src][y_src] = colors[1][0];
-    field[x_dest][y_dest] = colors[1][0];
+    char color;
 
-    return OUTPUT_FIELD;
+    color = field[x_src][y_src];
+    field[x_src][y_src] = 'A';
+    field[x_dest][y_dest] = color;
+
+    new_entries[0] = x_dest;
+    new_entries[1] = y_dest;
+
+    add_balls(3);
+
+    for (int i = 0; i < 4; i++)
+    {
+        printf("The %d coord x %d, y %d\n",
+                i,
+                new_entries[i],
+                new_entries[i + 1]);
+    }
+    
+    printf("The 1 coord x %d, y %d\n", new_entries[0], new_entries[1]);
+    printf("The 2 coord x %d, y %d\n", new_entries[2], new_entries[3]);
+    printf("The 3 coord x %d, y %d\n", new_entries[4], new_entries[5]);
+    printf("The 4 coord x %d, y %d\n", new_entries[6], new_entries[7]);
+
+    return CHECK_5_IN_ROW;
+}
+
+enum Statetype handle_check_5_in_row()
+{
+    int x;
+    int y;
+    char color; // Testing of color
+
+    for (char i = 0; i < 4; i++)
+    {
+        x = new_entries[i * 2];
+        y = new_entries[(i * 2) + 1];
+
+        color = field[x][y];
+    }
+    
 }
 
 int main(void)
 {
     enum Statetype state = OUTPUT_FIELD;
 
+    for (int i = 0; i < FIELD_SIDE; i++)
+    {
+        for (int j = 0; j < FIELD_SIDE; j++)
+        {
+            field[i][j] = 'A'; // A for "absent", field is empty
+        }
+    }
+    
     add_balls(3);
     
     while (state != EXIT)
