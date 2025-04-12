@@ -13,6 +13,11 @@ char field[FIELD_SIDE][FIELD_SIDE];
 
 char *coordinates;
 
+int x_src;
+int y_src;
+int x_dest;
+int y_dest;
+
 enum Statetype {
     OUTPUT_FIELD,
     TEST_EMPTY,
@@ -186,7 +191,7 @@ enum Statetype handle_enter_coordinates()
 
     coordinates = assign_string_from_input();
 
-    if (strcmp(coordinates, "exit") != 0)
+    if (strcmp(coordinates, "exit") == 0)
     {
         state = EXIT;
     }
@@ -204,10 +209,12 @@ enum Statetype handle_test_lex()
     if (
         ! (
             isdigit(coordinates[0]) ||
-            isdigit(coordinates[1]) ||
-            (coordinates[2] == '-') ||
-            isdigit(coordinates[3]) ||
-            isdigit(coordinates[4])
+            (coordinates[1] == '-') ||
+            isdigit(coordinates[2]) ||
+            (coordinates[3] == '-') ||
+            isdigit(coordinates[4]) ||
+            (coordinates[5] == '-') ||
+            isdigit(coordinates[6])
         )
     )
     {
@@ -222,34 +229,79 @@ enum Statetype handle_test_lex()
     return state;
 }
 
+enum Statetype handle_test_path()
+{
+    x_src = atoi(&coordinates[0]);
+    y_src = atoi(&coordinates[2]);
+
+    printf("The coordinates x_src %d y_src %d\n", x_src, y_src);
+    x_dest = atoi(&coordinates[4]);
+    y_dest = atoi(&coordinates[6]);
+
+    if (field[x_src][y_src] == '\0')
+    {
+        printf("The field %d %d is empty. ", x_src, y_src);
+        printf("Choose another source field\n");
+        return ENTER_COORD;
+    }
+    else if (field[x_dest][x_src] != '\0')
+    {
+        printf("The field %d %d is not empty .", x_dest, y_dest);
+        printf("Choose another destination field\n");
+        return ENTER_COORD;
+    }
+    
+    return MOVE_FILL;
+}
+
+enum Statetype handle_move_fill()
+{
+    field[x_src][y_src] = colors[1][0];
+    field[x_dest][y_dest] = colors[1][0];
+
+    return OUTPUT_FIELD;
+}
+
 int main(void)
 {
-    bool err = false;   // Error that coordinates were input
-    // incorrectly
+    enum Statetype state = OUTPUT_FIELD;
 
     add_balls(3);
-    handle_output_field();
     
-    do
+    while (state != EXIT)
     {
-        printf("Enter the coordinates of the ball you want to move ");
-        printf("and destination separated by dash:\n");
-
-        coordinates = assign_string_from_input();
-
-        if (
-            ! (
-                isdigit(coordinates[0]) ||
-                isdigit(coordinates[1]) ||
-                (coordinates[2] == '-') ||
-                isdigit(coordinates[3]) ||
-                isdigit(coordinates[4])
-            )
-        )
+        switch (state)
         {
-            printf("Coordinates were input incorrectly\n");
-            err = true;
-        }
+            case OUTPUT_FIELD:
+                state = handle_output_field();
+                break;
+            
+            case TEST_EMPTY:
+                state = handle_test_empty();
+                break;
 
-    } while (err);   
+            case GAME_OVER:
+                state = handle_game_over();
+                break;
+            
+            case ENTER_COORD:
+                state = handle_enter_coordinates();
+                break;
+            
+            case TEST_LEX:
+                state = handle_test_lex();
+                break;
+
+            case TEST_PATH:
+                state = handle_test_path();
+                break;
+            
+            case MOVE_FILL:
+                state = handle_move_fill();
+                break;
+            
+            default:
+                break;
+        }
+    }
 }
