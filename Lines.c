@@ -170,8 +170,6 @@ void add_balls(char balls_quantity)
     char color;
     char color_num;
 
-    printf("Calculating number of empty fields\n");
-
     // Calculating how many empty spots are left
     for (int i = 0; i < FIELD_SIDE; i++)
     {
@@ -183,8 +181,6 @@ void add_balls(char balls_quantity)
             }
         }
     }
-
-    printf("Number of empty fields is %d\n", empty);
 
     // srand ( time(NULL) );
 
@@ -278,6 +274,8 @@ enum Statetype handle_test_path()
     x_dest = atoi(&coordinates[4]);
     y_dest = atoi(&coordinates[6]);
 
+    printf("The source field is %c\n", field[x_src][y_src]);
+
     if (field[x_src][y_src] == 'A')
     {
         printf("The field %d %d is empty. ", x_src, y_src);
@@ -327,7 +325,11 @@ enum Statetype handle_check_5_in_row()
 {
     int x;
     int y;
+    int j; // Offset
+    int cnt_in_row = 1;
+    bool pop_ball = false;
     char color; // Testing of color
+    char color_check;
 
     for (char i = 0; i < 4; i++)
     {
@@ -335,8 +337,55 @@ enum Statetype handle_check_5_in_row()
         y = new_entries[(i * 2) + 1];
 
         color = field[x][y];
+
+        color_check = color;
+
+        j = 1;
+
+        while (color_check == color && (x - j) >= 0)
+        {
+            if (color_check = field[x - j][y])
+            {
+                printf("Checking x %d\n", x - j);
+                cnt_in_row += 1;
+            }
+            j++;
+        }
+
+        j = 1;
+
+        while (color_check == color && (x + j) <= 9)
+        {
+            if (color_check = field[x + j][y])
+            {
+                cnt_in_row += 1;
+            }
+            j++;
+        }
+
+        if (cnt_in_row >= 5)
+        {
+            pop_ball = true;
+
+            printf("Popping balls\n");
+
+            do
+            {
+                if (j != 0)
+                {
+                    field[x + j][y] = 'A';
+                }
+                j--;
+            } while (field[x + j][y] = color &&
+                    (x + j) >= 0 && (x + j) <= 9);
+        }
+
+        j = 1;
+
+        cnt_in_row = 1;
     }
-    
+
+    return OUTPUT_FIELD;
 }
 
 int main(void)
@@ -383,6 +432,10 @@ int main(void)
             
             case MOVE_FILL:
                 state = handle_move_fill();
+                break;
+
+            case CHECK_5_IN_ROW:
+                state = handle_check_5_in_row();
                 break;
             
             default:
