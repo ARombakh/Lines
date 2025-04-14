@@ -9,6 +9,8 @@
 #define COLORS_COUNT 5
 #define MAX_STRING 256
 
+int max_tries_enter = 0;
+
 char field[FIELD_SIDE][FIELD_SIDE];
 
 char *coordinates;
@@ -223,20 +225,27 @@ enum Statetype handle_enter_coordinates()
 {
     enum Statetype state;
 
-    printf("Enter the coordinates of the ball you want to move ");
-    printf("and destination separated by dash:\n");
-
-    coordinates = assign_string_from_input();
-
-    if (strcmp(coordinates, "exit") == 0)
+    if (max_tries_enter >= 5)
     {
         state = EXIT;
     }
     else
     {
-        state = TEST_LEX;
+        printf("Enter the coordinates of the ball you want to move ");
+        printf("and destination separated by dash:\n");
+
+        coordinates = assign_string_from_input();
+
+        if (strcmp(coordinates, "exit") == 0)
+        {
+            state = EXIT;
+        }
+        else
+        {
+            state = TEST_LEX;
+        }
     }
-    
+
     return state;
 }
 
@@ -274,12 +283,13 @@ enum Statetype handle_test_path()
     x_dest = atoi(&coordinates[4]);
     y_dest = atoi(&coordinates[6]);
 
-    printf("The source field is %c\n", field[x_src][y_src]);
+    // printf("The source field is %c\n", field[x_src][y_src]);
 
     if (field[x_src][y_src] == 'A')
     {
         printf("The field %d %d is empty. ", x_src, y_src);
         printf("Choose another source field\n");
+        max_tries_enter += 1;
         return ENTER_COORD;
     }
     else if (field[x_dest][y_dest] != 'A')
@@ -304,19 +314,6 @@ enum Statetype handle_move_fill()
     new_entries[1] = y_dest;
 
     add_balls(3);
-
-    for (int i = 0; i < 4; i++)
-    {
-        printf("The %d coord x %d, y %d\n",
-                i,
-                new_entries[i],
-                new_entries[i + 1]);
-    }
-    
-    printf("The 1 coord x %d, y %d\n", new_entries[0], new_entries[1]);
-    printf("The 2 coord x %d, y %d\n", new_entries[2], new_entries[3]);
-    printf("The 3 coord x %d, y %d\n", new_entries[4], new_entries[5]);
-    printf("The 4 coord x %d, y %d\n", new_entries[6], new_entries[7]);
 
     return CHECK_5_IN_ROW;
 }
@@ -344,9 +341,8 @@ enum Statetype handle_check_5_in_row()
 
         while (color_check == color && (x - j) >= 0)
         {
-            if (color_check = field[x - j][y])
+            if ((color_check = field[x - j][y]) == color)
             {
-                printf("Checking x %d\n", x - j);
                 cnt_in_row += 1;
             }
             j++;
@@ -356,9 +352,11 @@ enum Statetype handle_check_5_in_row()
 
         while (color_check == color && (x + j) <= 9)
         {
-            if (color_check = field[x + j][y])
+            if ((color_check = field[x + j][y]) == color)
             {
+                printf("Checking x %d y %d\n", x - j, y);
                 cnt_in_row += 1;
+                printf("cnt_in_row %d\n", cnt_in_row);
             }
             j++;
         }
@@ -367,8 +365,6 @@ enum Statetype handle_check_5_in_row()
         {
             pop_ball = true;
 
-            printf("Popping balls\n");
-
             do
             {
                 if (j != 0)
@@ -376,8 +372,13 @@ enum Statetype handle_check_5_in_row()
                     field[x + j][y] = 'A';
                 }
                 j--;
-            } while (field[x + j][y] = color &&
+            } while (field[x + j][y] == color &&
                     (x + j) >= 0 && (x + j) <= 9);
+        }
+
+        if (pop_ball)
+        {
+            field[x][y] = 'A';
         }
 
         j = 1;
