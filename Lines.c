@@ -345,14 +345,17 @@ void test_row(const int x, const int y, const char color)
         case 1:
             x_plus = 1;
             y_plus = -1;
+            break;
 
         case 2:
             x_plus = 0;
             y_plus = 1;
+            break;
         
         case 3:
             x_plus = 1;
             y_plus = 0;
+            break;
         
         default:
             break;
@@ -373,9 +376,9 @@ void test_row(const int x, const int y, const char color)
             if ((color_check = field[x + m][y + n]) == color)
             {
                 cnt_in_row += 1;
+                m += x_plus;
+                n += y_plus;
             }
-            m += x_plus;
-            n += y_plus;
         }
 
         color_check = color;
@@ -395,9 +398,9 @@ void test_row(const int x, const int y, const char color)
             if ((color_check = field[x + m][y + n]) == color)
             {
                 cnt_in_row += 1;
+                m -= x_plus;
+                n -= y_plus;
             }
-            m -= x_plus;
-            n -= y_plus;
         }
 
         if (cnt_in_row >= 5)
@@ -407,18 +410,15 @@ void test_row(const int x, const int y, const char color)
             m += x_plus;
             n += y_plus;
 
-            printf("Init x %d y %d\n", x + m, y + n);
-
             do
             {
-                if (m != 0 && n != 0)
+                if (!(m == 0 && n == 0))
                 {
                     field[x + m][y + n] = 'A';
                 }
                 m += x_plus;
                 n += y_plus;
 
-                printf("The x %d y %d\n", x + m, y + n);
             } while (field[x + m][y + n] == color &&
                         (x + m) >= 0 && (x + m) <= FIELD_SIDE &&
                         (y + n) >= 0 && (y + n) <= FIELD_SIDE
@@ -448,6 +448,8 @@ enum Statetype handle_check_5_in_row()
         y = new_entries[(i * 2) + 1];
 
         color = field[x][y];
+
+        printf("New entry x %d y %d, color %c\n", x, y, color);
 
         test_row(x, y, color);
         /*
