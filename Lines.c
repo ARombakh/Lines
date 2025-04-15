@@ -318,6 +318,120 @@ enum Statetype handle_move_fill()
     return CHECK_5_IN_ROW;
 }
 
+void test_row(const int x, const int y, const char color)
+{
+    char color_check;
+    bool pop_ball = false;
+    int cnt_in_row = 1;
+    int x_plus;
+    int y_plus;
+    int m = 0;
+    int n = 0;
+
+    color_check = color;
+
+    for (int i = 0; i < 4; i++)
+    {
+        cnt_in_row = 1;
+        color_check = color;
+
+        switch (i)
+        {
+        case 0:
+            x_plus = 1;
+            y_plus = 1;
+            break;
+        
+        case 1:
+            x_plus = 1;
+            y_plus = -1;
+
+        case 2:
+            x_plus = 0;
+            y_plus = 1;
+        
+        case 3:
+            x_plus = 1;
+            y_plus = 0;
+        
+        default:
+            break;
+        }
+
+        m = 0;
+        n = 0;
+
+        m += x_plus;
+        n += y_plus;
+
+        while (color_check == color &&
+                (x + m) >= 0 &&
+                (x + m) < FIELD_SIDE &&
+                (y + n) >= 0 &&
+                (y + n) < FIELD_SIDE)
+        {
+            if ((color_check = field[x + m][y + n]) == color)
+            {
+                cnt_in_row += 1;
+            }
+            m += x_plus;
+            n += y_plus;
+        }
+
+        color_check = color;
+
+        m = 0;
+        n = 0;
+
+        m -= x_plus;
+        n -= y_plus;
+
+        while (color_check == color &&
+            (x + m) >= 0 &&
+            (x + m) < FIELD_SIDE &&
+            (y + n) >= 0 &&
+            (y + n) < FIELD_SIDE)
+        {
+            if ((color_check = field[x + m][y + n]) == color)
+            {
+                cnt_in_row += 1;
+            }
+            m -= x_plus;
+            n -= y_plus;
+        }
+
+        if (cnt_in_row >= 5)
+        {
+            pop_ball = true;
+
+            m += x_plus;
+            n += y_plus;
+
+            printf("Init x %d y %d\n", x + m, y + n);
+
+            do
+            {
+                if (m != 0 && n != 0)
+                {
+                    field[x + m][y + n] = 'A';
+                }
+                m += x_plus;
+                n += y_plus;
+
+                printf("The x %d y %d\n", x + m, y + n);
+            } while (field[x + m][y + n] == color &&
+                        (x + m) >= 0 && (x + m) <= FIELD_SIDE &&
+                        (y + n) >= 0 && (y + n) <= FIELD_SIDE
+                    );
+        }
+    }
+
+    if (pop_ball)
+    {
+        field[x][y] = 'A';
+    }
+}
+
 enum Statetype handle_check_5_in_row()
 {
     int x;
@@ -335,6 +449,8 @@ enum Statetype handle_check_5_in_row()
 
         color = field[x][y];
 
+        test_row(x, y, color);
+        /*
         color_check = color;
 
         j = 1;
@@ -383,7 +499,7 @@ enum Statetype handle_check_5_in_row()
 
         j = 1;
 
-        cnt_in_row = 1;
+        cnt_in_row = 1;*/
     }
 
     return OUTPUT_FIELD;
