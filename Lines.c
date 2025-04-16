@@ -320,46 +320,54 @@ enum Statetype handle_move_fill()
 
 void test_row(const int x, const int y, const char color)
 {
-    char color_check;
-    bool pop_ball = false;
-    int cnt_in_row = 1;
-    int x_plus;
-    int y_plus;
-    int m = 0;
+    char color_check;   // Variable to hold color that is compared
+    // with initial color
+    int cnt_in_row = 1; // Count number of balls in the row
+    // and if they are more than 5, then pop balls
+    bool pop_ball = false;  // Variable to pop balls if they are more than 5
+    // in a row
+    int m = 0;  // Offset of x when balls in a row are compared
     int n = 0;
-    int z;
+    int x_plus; // Increase in offset of x (m) when moving to compare
+    // balls in a row
+    int y_plus; // Increase in offset of y (n) when moving to compare
+    // balls in a row
+    int z;  // Variable to hold direction in which comparing ball is moved
 
     color_check = color;
 
     for (int i = 0; i < 4; i++)
     {
-        cnt_in_row = 1;
-
+        // There are 4 directions, in which the comparison goes
         switch (i)
         {
         case 0:
+            // Diagonal up and right
             x_plus = 1;
             y_plus = 1;
             break;
         
         case 1:
+            // Diagonal down and right
             x_plus = 1;
             y_plus = -1;
             break;
 
         case 2:
+            // Vertical
             x_plus = 0;
             y_plus = 1;
             break;
         
         case 3:
+            // Horizontal
             x_plus = 1;
             y_plus = 0;
             break;
-        
-        default:
-            break;
         }
+
+        // Initializing quantity of balls in a row
+        cnt_in_row = 1;
 
         for (char j = 0; j < 2; j++)
         {
@@ -381,6 +389,7 @@ void test_row(const int x, const int y, const char color)
             n += y_plus * z;
     
             while (color_check == color &&
+                    // Field to check doesn't go out of the board
                     (x + m) >= 0 &&
                     (x + m) < FIELD_SIDE &&
                     (y + n) >= 0 &&
@@ -399,11 +408,18 @@ void test_row(const int x, const int y, const char color)
         {
             pop_ball = true;
 
+            // After all the checks in row have successfully been made
+            // offset is out of the row by one position. The code here
+            // is to return offset to rows
             m += x_plus;
             n += y_plus;
 
+            // Popping balls
             do
             {
+                // The initial ball (that is in new position)
+                // is not to be popped until the checks
+                // of all 4 rows is all directions are done
                 if (!(m == 0 && n == 0))
                 {
                     field[x + m][y + n] = 'A';
