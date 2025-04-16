@@ -327,13 +327,13 @@ void test_row(const int x, const int y, const char color)
     int y_plus;
     int m = 0;
     int n = 0;
+    int z;
 
     color_check = color;
 
     for (int i = 0; i < 4; i++)
     {
         cnt_in_row = 1;
-        color_check = color;
 
         switch (i)
         {
@@ -361,45 +361,37 @@ void test_row(const int x, const int y, const char color)
             break;
         }
 
-        m = 0;
-        n = 0;
-
-        m += x_plus;
-        n += y_plus;
-
-        while (color_check == color &&
-                (x + m) >= 0 &&
-                (x + m) < FIELD_SIDE &&
-                (y + n) >= 0 &&
-                (y + n) < FIELD_SIDE)
+        for (char j = 0; j < 2; j++)
         {
-            if ((color_check = field[x + m][y + n]) == color)
+            if (j == 0)
             {
-                cnt_in_row += 1;
-                m += x_plus;
-                n += y_plus;
+                z = 1;
             }
-        }
-
-        color_check = color;
-
-        m = 0;
-        n = 0;
-
-        m -= x_plus;
-        n -= y_plus;
-
-        while (color_check == color &&
-            (x + m) >= 0 &&
-            (x + m) < FIELD_SIDE &&
-            (y + n) >= 0 &&
-            (y + n) < FIELD_SIDE)
-        {
-            if ((color_check = field[x + m][y + n]) == color)
+            else
             {
-                cnt_in_row += 1;
-                m -= x_plus;
-                n -= y_plus;
+                z = -1;
+            }
+            
+            color_check = color;
+
+            m = 0;
+            n = 0;
+    
+            m += x_plus * z;
+            n += y_plus * z;
+    
+            while (color_check == color &&
+                    (x + m) >= 0 &&
+                    (x + m) < FIELD_SIDE &&
+                    (y + n) >= 0 &&
+                    (y + n) < FIELD_SIDE)
+            {
+                if ((color_check = field[x + m][y + n]) == color)
+                {
+                    cnt_in_row += 1;
+                    m += x_plus * z;
+                    n += y_plus * z;
+                }
             }
         }
 
