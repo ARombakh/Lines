@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "structs.h"
+
+/*
 struct Point
 {
     char x;
@@ -14,6 +17,7 @@ typedef struct Node
     struct Point p;
     struct Node* next; 
 } Node;
+*/
 
 // Global variable for top of the stack
 Node* top = NULL;
