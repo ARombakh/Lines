@@ -467,30 +467,6 @@ enum Statetype handle_check_5_in_row()
 
 int main(void)
 {
-    init();
-
-    bool instack;
-
-    push(3, 5);
-    push(8, 5);
-    push(9, 0);
-    push(4, 1);
-
-    struct Point pnt = peek();
-    
-    printf("Upper element: %d, %d\n", pnt.x, pnt.y);
-
-    pnt = pop();
-    printf("Next upper element: %d, %d\n", pnt.x, pnt.y);
-
-    pnt = pop();
-    printf("Yet next upper element: %d, %d\n", pnt.x, pnt.y);
-
-    instack = isInStack(8, 5);
-    printf("8, 5 is in the stack is %d\n", instack);
-
-    clearStack();
-
     enum Statetype state = OUTPUT_FIELD;
 
     for (int i = 0; i < FIELD_SIDE; i++)
