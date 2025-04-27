@@ -439,13 +439,27 @@ enum Statetype handle_check_5_in_row()
     return OUTPUT_FIELD;
 }
 
+void handle_delete_breadcrumbs()
+{
+    for (char i = 0; i < FIELD_SIDE; i++)
+    {
+        for (char j = 0; j < FIELD_SIDE; j++)
+        {
+            if (field[i][j] == 'O' || field[i][j] == '*')
+            {
+                field[i][j] = 'A';
+            }
+        }
+    }
+}
+
 bool handle_test_path_exists(char x_src, char y_src,
                             char x_dest, char y_dest)
 {
     bool path_exists = false;
 
-    struct Point src;
-    struct Point dest;
+    printf("Source coord. %d %d dest. coord %d %d\n", x_src, y_src,
+            x_dest, y_dest);
 
     char x;
     char y;
@@ -552,6 +566,11 @@ enum Statetype handle_test_path()
         printf("Choose another destination field\n");
         return ENTER_COORD;
     }
+    else if (x_src == x_dest && y_src == y_dest)
+    {
+        printf("The coordinates of source and destination are the same.\n");
+        printf("Choose other coordinates.\n");
+    }
     else if (handle_test_path_exists(x_src, y_src, x_dest, y_dest) == false)
     {
         printf("The path from %d %d to ", x_src, y_src);
@@ -560,39 +579,11 @@ enum Statetype handle_test_path()
         return ENTER_COORD;
     }
     
-    
     return MOVE_FILL;
 }
 
 int main(void)
 {
-
-    bool inStack;
-
-    init();
-    init_2();
-
-    push(3, 5);
-    push(8, 5);
-    push(9, 0);
-    push(4, 1);
-
-    struct Point pnt = peek();
-    
-    printf("Upper element: %d, %d\n", pnt.x, pnt.y);
-
-    pnt = pop();
-    printf("Next upper element: %d, %d\n", pnt.x, pnt.y);
-
-    pnt = pop();
-    printf("Yet next upper element: %d, %d\n", pnt.x, pnt.y);
-
-    inStack = isInStack(8, 5);
-    printf("8, 5 is in the stack is %d\n", inStack);
-
-    clearStack();
-    clearStack_2();
-
     enum Statetype state = OUTPUT_FIELD;
 
     for (int i = 0; i < FIELD_SIDE; i++)
