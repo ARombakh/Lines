@@ -8,10 +8,15 @@ struct Point
 };
 
 // Defining structure of stack node
-typedef struct Node
+struct Node
 {
     struct Point p;
     struct Node* next; 
-} Node;
+};
+
+// Stack definition
+struct Stack {
+    struct Node* head;      // upper element of stack
+};
 
 #endif

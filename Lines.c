@@ -1,5 +1,6 @@
 #include "stack.h"
 #include "structs.h"
+#include "stack_dub.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -277,33 +278,6 @@ enum Statetype handle_test_lex()
     return state;
 }
 
-enum Statetype handle_test_path()
-{
-    x_src = atoi(&coordinates[0]);
-    y_src = atoi(&coordinates[2]);
-
-    x_dest = atoi(&coordinates[4]);
-    y_dest = atoi(&coordinates[6]);
-
-    // printf("The source field is %c\n", field[x_src][y_src]);
-
-    if (field[x_src][y_src] == 'A')
-    {
-        printf("The field %d %d is empty. ", x_src, y_src);
-        printf("Choose another source field\n");
-        max_tries_enter += 1;
-        return ENTER_COORD;
-    }
-    else if (field[x_dest][y_dest] != 'A')
-    {
-        printf("The field %d %d is not empty. ", x_dest, y_dest);
-        printf("Choose another destination field\n");
-        return ENTER_COORD;
-    }
-    
-    return MOVE_FILL;
-}
-
 enum Statetype handle_move_fill()
 {
     char color;
@@ -465,8 +439,160 @@ enum Statetype handle_check_5_in_row()
     return OUTPUT_FIELD;
 }
 
+bool handle_test_path_exists(char x_src, char y_src,
+                            char x_dest, char y_dest)
+{
+    bool path_exists = false;
+
+    struct Point src;
+    struct Point dest;
+
+    char x;
+    char y;
+
+    char x_offset;
+    char y_offset;
+
+    char x_check;
+    char y_check;
+
+    char cell;
+    
+    init();
+    init_2();
+
+    struct Point pnt_check;
+
+    // Stack of cells to be checked
+    push (x_src, y_src);
+
+    while (!isEmpty())
+    {
+        pnt_check = pop();
+
+        for (char i = 0; i < 4; i++)
+        {
+            switch (i)
+            {
+            case 0:
+                x_offset = 0;
+                y_offset = -1;
+                break;
+
+            case 1:
+                x_offset = -1;
+                y_offset = 0;
+                break;
+            
+            case 2:
+                x_offset = 1;
+                y_offset = 0;
+                break;
+
+            case 3:
+                x_offset = 0;
+                y_offset = 1;
+                break;
+            }
+
+            x_check = pnt_check.x + x_offset;
+            y_check = pnt_check.y + y_offset;
+
+            if (x_check >= 0 && x_check <= 9 &&
+                y_check >= 0 && y_check <= 9)
+            {
+                if (x_check == x_dest && y_check == y_dest)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (field[x_check][y_check] == 'A')
+                    {
+                        if (!isInStack(x_check, y_check) &&
+                            !isInStack_2(x_check, y_check))
+                        {
+                            push(x_check, y_check);
+                        }
+                    }
+                }
+            } 
+        }
+
+        push_2(pnt_check.x, pnt_check.y); // After checking all adjacent
+        // cells put center cell in the stack for center
+    }
+    
+    clearStack();
+    clearStack_2();
+
+    return path_exists;
+}
+
+enum Statetype handle_test_path()
+{
+    x_src = atoi(&coordinates[0]);
+    y_src = atoi(&coordinates[2]);
+
+    x_dest = atoi(&coordinates[4]);
+    y_dest = atoi(&coordinates[6]);
+
+    // printf("The source field is %c\n", field[x_src][y_src]);
+
+    if (field[x_src][y_src] == 'A')
+    {
+        printf("The field %d %d is empty. ", x_src, y_src);
+        printf("Choose another source field\n");
+        max_tries_enter += 1;
+        return ENTER_COORD;
+    }
+    else if (field[x_dest][y_dest] != 'A')
+    {
+        printf("The field %d %d is not empty. ", x_dest, y_dest);
+        printf("Choose another destination field\n");
+        return ENTER_COORD;
+    }
+    else if (handle_test_path_exists(x_src, y_src, x_dest, y_dest) == false)
+    {
+        printf("The path from %d %d to ", x_src, y_src);
+        printf("%d %d cannot be reached\n", x_dest, y_dest);
+        printf("Choose another destination field\n");
+        return ENTER_COORD;
+    }
+    
+    
+    return MOVE_FILL;
+}
+
 int main(void)
 {
+
+    bool inStack;
+
+    init();
+    init_2();
+
+    push(3, 5);
+    push(8, 5);
+    push(9, 0);
+    push(4, 1);
+
+    struct Point pnt = peek();
+    
+    printf("Upper element: %d, %d\n", pnt.x, pnt.y);
+
+    pnt = pop();
+    printf("Next upper element: %d, %d\n", pnt.x, pnt.y);
+
+    pnt = pop();
+    printf("Yet next upper element: %d, %d\n", pnt.x, pnt.y);
+
+    inStack = isInStack(8, 5);
+    printf("8, 5 is in the stack is %d\n", inStack);
+
+    clearStack();
+    clearStack_2();
+
     enum Statetype state = OUTPUT_FIELD;
 
     for (int i = 0; i < FIELD_SIDE; i++)
