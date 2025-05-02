@@ -1,6 +1,5 @@
-#include "stack.h"
+#include "linked_list.h"
 #include "structs.h"
-#include "stack_dub.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -453,6 +452,11 @@ void handle_delete_breadcrumbs()
     }
 }
 
+void clear_breadcrumbs()
+{
+    
+}
+
 bool handle_test_path_exists(char x_src, char y_src,
                             char x_dest, char y_dest)
 {
@@ -460,6 +464,8 @@ bool handle_test_path_exists(char x_src, char y_src,
 
     printf("Source coord. %d %d dest. coord %d %d\n", x_src, y_src,
             x_dest, y_dest);
+
+    printf("Variables to be declared\n");
 
     char x;
     char y;
@@ -471,18 +477,18 @@ bool handle_test_path_exists(char x_src, char y_src,
     char y_check;
 
     char cell;
-    
-    init();
-    init_2();
+
+    struct Stack* centered_stack = create_stack();
+    struct Stack* tested_stack = create_stack();
 
     struct Point pnt_check;
 
     // Stack of cells to be checked
-    push (x_src, y_src);
+    push (tested_stack, x_src, y_src);
 
-    while (!isEmpty())
+    while (!is_empty(tested_stack))
     {
-        pnt_check = pop();
+        pnt_check = pop(tested_stack);
 
         for (char i = 0; i < 4; i++)
         {
@@ -512,8 +518,8 @@ bool handle_test_path_exists(char x_src, char y_src,
             x_check = pnt_check.x + x_offset;
             y_check = pnt_check.y + y_offset;
 
-            if (x_check >= 0 && x_check <= 9 &&
-                y_check >= 0 && y_check <= 9)
+            if (x_check >= 0 && x_check <= FIELD_SIDE - 1 &&
+                y_check >= 0 && y_check <= FIELD_SIDE - 1)
             {
                 if (x_check == x_dest && y_check == y_dest)
                 {
@@ -523,22 +529,30 @@ bool handle_test_path_exists(char x_src, char y_src,
                 {
                     if (field[x_check][y_check] == 'A')
                     {
-                        if (!isInStack(x_check, y_check) &&
-                            !isInStack_2(x_check, y_check))
+                        if (!search_stack(centered_stack,
+                                            x_check, y_check) &&
+                            !search_stack(tested_stack, x_check, y_check))
                         {
-                            push(x_check, y_check);
+                            push(tested_stack, x_check, y_check);
+                            field[x_check][y_check] = '*';
                         }
                     }
                 }
             } 
         }
 
-        push_2(pnt_check.x, pnt_check.y); // After checking all adjacent
-        // cells put center cell in the stack for center
+        push(centered_stack, pnt_check.x, pnt_check.y); // After checking
+        // all adjacent cells put center cell in the stack for center
+        if (x_src != pnt_check.x && y_src != pnt_check.y)
+        {
+            field[pnt_check.x][pnt_check.y] = 'O';
+        };
+        
+        handle_output_field();
     }
     
-    clearStack();
-    clearStack_2();
+    empty_stack(centered_stack);
+    empty_stack(tested_stack);
 
     return path_exists;
 }
