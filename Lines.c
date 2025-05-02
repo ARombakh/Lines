@@ -454,7 +454,16 @@ void handle_delete_breadcrumbs()
 
 void clear_breadcrumbs()
 {
-    
+    for (char i = 0; i < FIELD_SIDE; i++)
+    {
+        for (char j = 0; j < FIELD_SIDE; j++)
+        {
+            if (field[i][j] == 'O' || field[i][j] == '*')
+            {
+                field[i][j] = 'A';
+            }
+        }
+    }
 }
 
 bool handle_test_path_exists(char x_src, char y_src,
@@ -534,7 +543,6 @@ bool handle_test_path_exists(char x_src, char y_src,
                             !search_stack(tested_stack, x_check, y_check))
                         {
                             push(tested_stack, x_check, y_check);
-                            field[x_check][y_check] = '*';
                         }
                     }
                 }
@@ -543,12 +551,6 @@ bool handle_test_path_exists(char x_src, char y_src,
 
         push(centered_stack, pnt_check.x, pnt_check.y); // After checking
         // all adjacent cells put center cell in the stack for center
-        if (x_src != pnt_check.x && y_src != pnt_check.y)
-        {
-            field[pnt_check.x][pnt_check.y] = 'O';
-        };
-        
-        handle_output_field();
     }
     
     empty_stack(centered_stack);
