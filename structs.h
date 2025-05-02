@@ -10,8 +10,8 @@ struct Point
 // Defining structure of stack node
 struct Node
 {
+    struct Node* next;
     struct Point p;
-    struct Node* next; 
 };
 
 // Stack definition
