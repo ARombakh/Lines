@@ -13,8 +13,6 @@
 
 int max_tries_enter = 0;
 
-char field[FIELD_SIDE][FIELD_SIDE];
-
 char *coordinates;
 
 int new_entries[8];
@@ -62,7 +60,7 @@ char *assign_string_from_input ()
     return input;
 }
 
-enum Statetype handle_output_field()
+enum Statetype handle_output_field(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     enum Statetype state;
 
@@ -84,13 +82,13 @@ enum Statetype handle_output_field()
                 printf("%d ", i);
             }
             
-            if (field[j][i] == 'A')
+            if ((*pfield)[j][i] == 'A')
             {
                 printf(" ");
             }
             else
             {
-                printf("%c", field[j][i]);
+                printf("%c", (*pfield)[j][i]);
             }
 
             if (j == FIELD_SIDE - 1)
@@ -119,7 +117,7 @@ enum Statetype handle_output_field()
     return state;
 }
 
-enum Statetype handle_test_empty()
+enum Statetype handle_test_empty(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     enum Statetype state;
     bool empty = false;
@@ -128,7 +126,7 @@ enum Statetype handle_test_empty()
     {
         for (int j = 0; j < FIELD_SIDE; j++)
         {
-            if (field[i][j] == 'A')
+            if ((*pfield)[i][j] == 'A')
             {
                 empty = true;
             }
@@ -164,7 +162,7 @@ enum Statetype handle_game_over()
     return EXIT;    
 }
 
-void add_balls(char balls_quantity)
+void add_balls(char balls_quantity, char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     int x;
     int y;
@@ -179,7 +177,7 @@ void add_balls(char balls_quantity)
     {
         for (int j = 0; j < FIELD_SIDE; j++)
         {
-            if (field[i][j] == 'A')
+            if ((*pfield)[i][j] == 'A')
             {
                 empty++;
             }
@@ -200,7 +198,7 @@ void add_balls(char balls_quantity)
         {
             for (int j = 0; j < FIELD_SIDE; j++)
             {
-                if (field[i][j] == 'A')
+                if ((*pfield)[i][j] == 'A')
                 {
                     which_to_fill--;
                     if (which_to_fill == 0)
@@ -215,7 +213,7 @@ void add_balls(char balls_quantity)
 
         loop_exit:
     
-        field[x][y] = color;
+        (*pfield)[x][y] = color;
         new_entries[(i + 1) * 2] = x;
         new_entries[((i + 1) * 2) + 1] = y;
         i++;
@@ -277,23 +275,24 @@ enum Statetype handle_test_lex()
     return state;
 }
 
-enum Statetype handle_move_fill()
+enum Statetype handle_move_fill(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     char color;
 
-    color = field[x_src][y_src];
-    field[x_src][y_src] = 'A';
-    field[x_dest][y_dest] = color;
+    color = (*pfield)[x_src][y_src];
+    (*pfield)[x_src][y_src] = 'A';
+    (*pfield)[x_dest][y_dest] = color;
 
     new_entries[0] = x_dest;
     new_entries[1] = y_dest;
 
-    add_balls(3);
+    add_balls(3, pfield);
 
     return CHECK_5_IN_ROW;
 }
 
-void test_row(const int x, const int y, const char color)
+void test_row(const int x, const int y, const char color,
+                char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     char color_check;   // Variable to hold color that is compared
     // with initial color
@@ -370,7 +369,7 @@ void test_row(const int x, const int y, const char color)
                     (y + n) >= 0 &&
                     (y + n) < FIELD_SIDE)
             {
-                if ((color_check = field[x + m][y + n]) == color)
+                if ((color_check = (*pfield)[x + m][y + n]) == color)
                 {
                     cnt_in_row += 1;
                     m += x_plus * z;
@@ -397,12 +396,12 @@ void test_row(const int x, const int y, const char color)
                 // of all 4 rows is all directions are done
                 if (!(m == 0 && n == 0))
                 {
-                    field[x + m][y + n] = 'A';
+                    (*pfield)[x + m][y + n] = 'A';
                 }
                 m += x_plus;
                 n += y_plus;
 
-            } while (field[x + m][y + n] == color &&
+            } while ((*pfield)[x + m][y + n] == color &&
                         (x + m) >= 0 && (x + m) <= FIELD_SIDE &&
                         (y + n) >= 0 && (y + n) <= FIELD_SIDE
                     );
@@ -411,11 +410,11 @@ void test_row(const int x, const int y, const char color)
 
     if (pop_ball)
     {
-        field[x][y] = 'A';
+        (*pfield)[x][y] = 'A';
     }
 }
 
-enum Statetype handle_check_5_in_row()
+enum Statetype handle_check_5_in_row(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     int x;
     int y;
@@ -430,44 +429,17 @@ enum Statetype handle_check_5_in_row()
         x = new_entries[i * 2];
         y = new_entries[(i * 2) + 1];
 
-        color = field[x][y];
+        color = (*pfield)[x][y];
 
-        test_row(x, y, color);
+        test_row(x, y, color, pfield);
     }
 
     return OUTPUT_FIELD;
 }
 
-void handle_delete_breadcrumbs()
-{
-    for (char i = 0; i < FIELD_SIDE; i++)
-    {
-        for (char j = 0; j < FIELD_SIDE; j++)
-        {
-            if (field[i][j] == 'O' || field[i][j] == '*')
-            {
-                field[i][j] = 'A';
-            }
-        }
-    }
-}
-
-void clear_breadcrumbs()
-{
-    for (char i = 0; i < FIELD_SIDE; i++)
-    {
-        for (char j = 0; j < FIELD_SIDE; j++)
-        {
-            if (field[i][j] == 'O' || field[i][j] == '*')
-            {
-                field[i][j] = 'A';
-            }
-        }
-    }
-}
-
 bool handle_test_path_exists(char x_src, char y_src,
-                            char x_dest, char y_dest)
+                            char x_dest, char y_dest,
+                            char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     bool path_exists = false;
 
@@ -536,7 +508,7 @@ bool handle_test_path_exists(char x_src, char y_src,
                 }
                 else
                 {
-                    if (field[x_check][y_check] == 'A')
+                    if ((*pfield)[x_check][y_check] == 'A')
                     {
                         if (!search_stack(centered_stack,
                                             x_check, y_check) &&
@@ -559,7 +531,7 @@ bool handle_test_path_exists(char x_src, char y_src,
     return path_exists;
 }
 
-enum Statetype handle_test_path()
+enum Statetype handle_test_path(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
 {
     x_src = atoi(&coordinates[0]);
     y_src = atoi(&coordinates[2]);
@@ -569,14 +541,14 @@ enum Statetype handle_test_path()
 
     // printf("The source field is %c\n", field[x_src][y_src]);
 
-    if (field[x_src][y_src] == 'A')
+    if ((*pfield)[x_src][y_src] == 'A')
     {
         printf("The field %d %d is empty. ", x_src, y_src);
         printf("Choose another source field\n");
         max_tries_enter += 1;
         return ENTER_COORD;
     }
-    else if (field[x_dest][y_dest] != 'A')
+    else if ((*pfield)[x_dest][y_dest] != 'A')
     {
         printf("The field %d %d is not empty. ", x_dest, y_dest);
         printf("Choose another destination field\n");
@@ -587,7 +559,8 @@ enum Statetype handle_test_path()
         printf("The coordinates of source and destination are the same.\n");
         printf("Choose other coordinates.\n");
     }
-    else if (handle_test_path_exists(x_src, y_src, x_dest, y_dest) == false)
+    else if (handle_test_path_exists(x_src, y_src, x_dest,
+                                    y_dest, pfield) == false)
     {
         printf("The path from %d %d to ", x_src, y_src);
         printf("%d %d cannot be reached\n", x_dest, y_dest);
@@ -602,26 +575,32 @@ int main(void)
 {
     enum Statetype state = OUTPUT_FIELD;
 
+    char field[FIELD_SIDE][FIELD_SIDE];
+
+    char (*pfield)[FIELD_SIDE][FIELD_SIDE];
+
+    pfield = &field;
+
     for (int i = 0; i < FIELD_SIDE; i++)
     {
         for (int j = 0; j < FIELD_SIDE; j++)
         {
-            field[i][j] = 'A'; // A for "absent", field is empty
+            (*pfield)[i][j] = 'A'; // A for "absent", field is empty
         }
     }
     
-    add_balls(3);
+    add_balls(3, pfield);
     
     while (state != EXIT)
     {
         switch (state)
         {
             case OUTPUT_FIELD:
-                state = handle_output_field();
+                state = handle_output_field(pfield);
                 break;
             
             case TEST_EMPTY:
-                state = handle_test_empty();
+                state = handle_test_empty(pfield);
                 break;
 
             case GAME_OVER:
@@ -637,15 +616,15 @@ int main(void)
                 break;
 
             case TEST_PATH:
-                state = handle_test_path();
+                state = handle_test_path(pfield);
                 break;
             
             case MOVE_FILL:
-                state = handle_move_fill();
+                state = handle_move_fill(pfield);
                 break;
 
             case CHECK_5_IN_ROW:
-                state = handle_check_5_in_row();
+                state = handle_check_5_in_row(pfield);
                 break;
             
             default:
