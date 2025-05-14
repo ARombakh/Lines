@@ -13,8 +13,6 @@
 
 int max_tries_enter = 0;
 
-char *coordinates;
-
 int new_entries[8];
 
 int x_src;
@@ -221,7 +219,7 @@ void add_balls(char balls_quantity, char (*pfield)[FIELD_SIDE][FIELD_SIDE])
     }
 }
 
-enum Statetype handle_enter_coordinates()
+enum Statetype handle_enter_coordinates(char *pcoord)
 {
     enum Statetype state;
 
@@ -234,9 +232,9 @@ enum Statetype handle_enter_coordinates()
         printf("Enter the coordinates of the ball you want to move ");
         printf("and destination separated by dash:\n");
 
-        coordinates = assign_string_from_input();
+        strcpy(pcoord, assign_string_from_input());
 
-        if (strcmp(coordinates, "exit") == 0)
+        if (strcmp(pcoord, "exit") == 0)
         {
             state = EXIT;
         }
@@ -249,18 +247,19 @@ enum Statetype handle_enter_coordinates()
     return state;
 }
 
-enum Statetype handle_test_lex()
+enum Statetype handle_test_lex(char *pcoord)
 {
     enum Statetype state;
+
     if (
         ! (
-            isdigit(coordinates[0]) ||
-            (coordinates[1] == '-') ||
-            isdigit(coordinates[2]) ||
-            (coordinates[3] == '-') ||
-            isdigit(coordinates[4]) ||
-            (coordinates[5] == '-') ||
-            isdigit(coordinates[6])
+            isdigit(pcoord[0]) ||
+            (pcoord[1] == '-') ||
+            isdigit(pcoord[2]) ||
+            (pcoord[3] == '-') ||
+            isdigit(pcoord[4]) ||
+            (pcoord[5] == '-') ||
+            isdigit(pcoord[6])
         )
     )
     {
@@ -446,8 +445,6 @@ bool handle_test_path_exists(char x_src, char y_src,
     printf("Source coord. %d %d dest. coord %d %d\n", x_src, y_src,
             x_dest, y_dest);
 
-    printf("Variables to be declared\n");
-
     char x;
     char y;
 
@@ -531,13 +528,14 @@ bool handle_test_path_exists(char x_src, char y_src,
     return path_exists;
 }
 
-enum Statetype handle_test_path(char (*pfield)[FIELD_SIDE][FIELD_SIDE])
+enum Statetype handle_test_path(char (*pfield)[FIELD_SIDE][FIELD_SIDE],
+                                char *pcoord)
 {
-    x_src = atoi(&coordinates[0]);
-    y_src = atoi(&coordinates[2]);
+    x_src = atoi(&pcoord[0]);
+    y_src = atoi(&pcoord[2]);
 
-    x_dest = atoi(&coordinates[4]);
-    y_dest = atoi(&coordinates[6]);
+    x_dest = atoi(&pcoord[4]);
+    y_dest = atoi(&pcoord[6]);
 
     // printf("The source field is %c\n", field[x_src][y_src]);
 
@@ -581,6 +579,8 @@ int main(void)
 
     pfield = &field;
 
+    char pcoord[8];
+
     for (int i = 0; i < FIELD_SIDE; i++)
     {
         for (int j = 0; j < FIELD_SIDE; j++)
@@ -608,15 +608,15 @@ int main(void)
                 break;
             
             case ENTER_COORD:
-                state = handle_enter_coordinates();
+                state = handle_enter_coordinates(pcoord);
                 break;
             
             case TEST_LEX:
-                state = handle_test_lex();
+                state = handle_test_lex(pcoord);
                 break;
 
             case TEST_PATH:
-                state = handle_test_path(pfield);
+                state = handle_test_path(pfield, pcoord);
                 break;
             
             case MOVE_FILL:
